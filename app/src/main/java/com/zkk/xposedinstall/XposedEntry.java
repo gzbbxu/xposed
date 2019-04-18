@@ -23,13 +23,11 @@ class my_getColor extends XC_MethodHook{
     @Override
     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
         super.beforeHookedMethod(param);
-        Log.i("zhouke","before hook method");
     }
 
     @Override
     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
         super.afterHookedMethod(param);
-        Log.i("zhouke","afterHookedMethod");
         Object result = param.getResult();
         result = (int)result &~0x0000ff00| 0x00ff0000;
         param.setResult(result);
