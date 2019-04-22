@@ -9,13 +9,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <!--<activity android:name=".MainActivity">
+        <activity android:name=".MainActivity">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
 
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
-    </activity>-->
+    </activity>
         <meta-data
             android:name="xposedmodule"
             android:value="true"/>
@@ -26,7 +26,7 @@
 
         <meta-data
             android:name="xposedminversion"
-            android:value="54"/>
+        android:value="54"/>
     </application>
 
 </manifest>

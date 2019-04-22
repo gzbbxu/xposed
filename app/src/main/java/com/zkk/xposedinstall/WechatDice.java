@@ -2,6 +2,7 @@ package com.zkk.xposedinstall;
 
 import android.content.ContentValues;
 import android.util.Log;
+import android.view.View;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -114,11 +115,13 @@ public class WechatDice implements IXposedHookLoadPackage {
 
                                     int _paramInt = (int) param.args[3];
                                     if (_type == 1) {
-                                        Log.i("zhouke", "_contnet : " + _content + ": type = " + _type + ":isSend : " + isSend + "普通文本 :" + (isSend==0?"接受":"发送"));
+                                        Log.i("zhouke", "_contnet : " + _content + ": type = " + _type + ":isSend : " + isSend + "普通文本 :" + (isSend == 0 ? "接受" : "发送"));
                                     } else if (_type == 34) {
-                                        Log.i("zhouke", "_contnet : " + _content + ": type = " + _type + ":isSend : " + isSend + " 语音:" + (isSend==0?"接受":"发送"));
+                                        Log.i("zhouke", "_contnet : " + _content + ": type = " + _type + ":isSend : " + isSend + " 语音:" + (isSend == 0 ? "接受" : "发送"));
                                     }
                                     Log.i("zhouke", "paramInt : " + _paramInt);
+
+
                                 } else {
                                     Log.i("zhouke", "其它 tabname = " + tabName + ">>");
                                 }
@@ -145,6 +148,101 @@ public class WechatDice implements IXposedHookLoadPackage {
 
                             }
                         });
+
+
+                XposedHelpers.findAndHookMethod(ClassLoader.class, "loadClass", String.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        super.beforeHookedMethod(param);
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        super.afterHookedMethod(param);
+
+                        String className = (String) param.args[0];
+//                        Lcom/tencent/mm/ui/chatting/c/b/ad;->arq(Ljava/lang/String;)Z
+//                        com/tencent/mm/ui/chatting/c/b/ad
+                        if (className.equals("com.tencent.mm.ui.chatting.c.ai")) {
+                            Class clazz = (Class) param.getResult();
+                            Log.i("zhouke", "加载类ai成功");
+                            XposedHelpers.findAndHookMethod(clazz, "arq", String.class, new XC_MethodHook() {
+                                @Override
+                                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                    super.beforeHookedMethod(param);
+                                    Log.i("zhouke", "hook 到了 arq>>beforeHookedMethod " + param.args[0]);
+                                }
+
+                                @Override
+                                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                    super.afterHookedMethod(param);
+                                    Log.i("zhouke", "hook 到了 arq>>afterHookedMethod " + param.getResult());
+
+                                }
+                            });
+                        } else if (className.equals("com.tencent.mm.ui.chatting.p")) {
+                            Class clazz = (Class) param.getResult();
+                            Log.i("zhouke", "加载类chatting.p成功");
+                            Class d_a_cls = Class.forName("com.tencent.mm.ui.chatting.d.a");
+                            Class chatFooter = Class.forName("com.tencent.mm.pluginsdk.ui.chat.ChatFooter");
+                            XposedHelpers.findAndHookConstructor(clazz, d_a_cls, chatFooter, String.class, new XC_MethodHook() {
+                                @Override
+                                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                    super.beforeHookedMethod(param);
+                                    Log.i("zhouke", "chatting.p beforeHookedMethod 构造被调用");
+                                }
+
+                                @Override
+                                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                    super.afterHookedMethod(param);
+                                    Log.i("zhouke", "chatting.p afterHookedMethod 构造被调用完毕>> " +param.args[0]);
+                                }
+                            });
+                        }else if(className.equals("")){
+
+                        }
+
+                    /*
+                       hook 到了点击发送事件
+                       if (className.equals("com.tencent.mm.ui.chatting.p")) {
+                            Class clazz = (Class) param.getResult();
+                            XposedHelpers.findAndHookMethod(clazz, "Qu", String.class, new XC_MethodHook() {
+                                @Override
+                                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                    Log.i("zhouke", "hook 到了 >> Qu >> " + param.args[0]);
+                                    super.beforeHookedMethod(param);
+                                }
+
+                                @Override
+                                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                    super.afterHookedMethod(param);
+                                }
+                            });
+
+
+                        }*/
+                    /*
+                       //hook 到了点击事件
+                    if (className.equals("com.tencent.mm.pluginsdk.ui.chat.ChatFooter$4")) {
+                            Log.i("zhouke","加载到Footer类了 ");
+                            Class clazz = (Class) param.getResult();
+                            XposedHelpers.findAndHookMethod(clazz, "onClick", View.class, new XC_MethodHook() {
+                                @Override
+                                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                    Log.i("zhouke","hook 到了 >> onClick beforeHookedMethod >>");
+                                    super.beforeHookedMethod(param);
+                                }
+
+                                @Override
+                                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                    Log.i("zhouke","hook 到了 >> onClick afterHookedMethod");
+                                    super.afterHookedMethod(param);
+                                }
+                            });
+                        }*/
+                    }
+                });
+
             }
 
         } catch (Exception e) {
