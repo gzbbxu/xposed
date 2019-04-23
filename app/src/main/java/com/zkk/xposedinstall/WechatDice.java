@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.util.Log;
 import android.view.View;
 
+import java.lang.ref.WeakReference;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -16,7 +18,9 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  */
 public class WechatDice implements IXposedHookLoadPackage {
     //com.tencent.mm.ui.chatting.d.a
-    Object objectD_a  = null;
+    Object objectD_a = null;
+    WeakReference<Object> object_p = null;
+
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
         try {
@@ -113,14 +117,30 @@ public class WechatDice implements IXposedHookLoadPackage {
                                     String _content = (String) contentV.get("content");
                                     int _type = (int) contentV.get("type");
                                     int isSend = (int) contentV.get("isSend");
-
+                                    String talker = (String) contentV.get("talker");
 
                                     int _paramInt = (int) param.args[3];
                                     if (_type == 1) {
-                                        Log.i("zhouke", "_contnet : " + _content + ": type = " + _type + ":isSend : " + isSend + "普通文本 :" + (isSend == 0 ? "接受" : "发送"));
-                                        if(isSend==0){
+                                        Log.i("zhouke", "_contnet : " + _content + ": type = " + _type + ":isSend : " + isSend + "普通文本 :" + (isSend == 0 ? "接受" : "发送") + ":talkerId :" + talker);
+                                        if (isSend == 0) {
                                             //接收文本消息后，自动回复
 //                                            XposedHelpers.callMethod(objectD_a,)
+//                                            XposedHelpers.callMethod(objectD_a)
+                                            if (object_p != null) {
+                                                if (object_p.get() != null) {
+                                                  /*  try {
+                                                        XposedHelpers.callMethod(object_p.get(), "Qu", "我是机器人自动回复的");
+                                                    } catch (Exception e) {
+                                                        Log.e("zhouke", "自动回复错误>> " + e.getLocalizedMessage());
+                                                        e.printStackTrace();
+                                                    }*/
+
+                                                } else {
+                                                    Log.i("zhouke", "空引用 ...");
+                                                }
+                                            } else {
+                                                Log.i("zhouke", "构造还未执行...");
+                                            }
                                         }
                                     } else if (_type == 34) {
                                         Log.i("zhouke", "_contnet : " + _content + ": type = " + _type + ":isSend : " + isSend + " 语音:" + (isSend == 0 ? "接受" : "发送"));
@@ -191,10 +211,10 @@ public class WechatDice implements IXposedHookLoadPackage {
                             Log.i("zhouke", "加载类chatting.p成功 111》》 ");
 //                            XposedBridge.log("加载类chatting.p成功 111》》 ");
 //                            Class d_a_cls = Class.forName("com.tencent.mm.ui.chatting.d.a");
-                            Class d_a_cls = XposedHelpers.findClass("com.tencent.mm.ui.chatting.d.a",clazz.getClassLoader());
-                            Class chatFooter_cls = XposedHelpers.findClass("com.tencent.mm.pluginsdk.ui.chat.ChatFooter",clazz.getClassLoader());
+                            Class d_a_cls = XposedHelpers.findClass("com.tencent.mm.ui.chatting.d.a", clazz.getClassLoader());
+                            Class chatFooter_cls = XposedHelpers.findClass("com.tencent.mm.pluginsdk.ui.chat.ChatFooter", clazz.getClassLoader());
 
-                            Log.i("zhouke", "加载类chatting.p成功 22》》 " + d_a_cls + " >> " +chatFooter_cls);
+                            Log.i("zhouke", "加载类chatting.p成功 22》》 " + d_a_cls + " >> " + chatFooter_cls);
 
                             XposedHelpers.findAndHookConstructor(clazz, d_a_cls, chatFooter_cls, String.class, new XC_MethodHook() {
                                 @Override
@@ -207,13 +227,31 @@ public class WechatDice implements IXposedHookLoadPackage {
                                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                                     super.afterHookedMethod(param);
                                     objectD_a = param.args[0];
-                                    Log.i("zhouke", "chatting.p afterHookedMethod 构造被调用完毕>> " + param.args[0]);
+                                    object_p = new WeakReference<>(param.thisObject);
+                                    Log.i("zhouke", "chatting.p afterHookedMethod 构造被调用完毕>> " + param.args[0] + ">> 当前对象 >> " + param.thisObject); //com.tencent.mm.ui.chatting.d.a@456918e0
+
                                 }
                             });
 
 
                         } else if (className.equals("com.tencent.mm.ui.chatting.d.a")) {
-                            Log.i("zhouke", "加载类chatting.d.a 成功 》》 ");
+                            Log.i("zhouke", "加载类chatting.d.a成功 》》 ");
+                            Class clazz = (Class) param.getResult();
+                            XposedHelpers.findAndHookMethod(clazz, "getTalkerUserName", new XC_MethodHook() {
+                                @Override
+                                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                    super.beforeHookedMethod(param);
+
+                                }
+
+                                @Override
+                                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                    super.afterHookedMethod(param);
+
+                                    Log.i("zhouke", "getTalkerUserName afterHookedMethod >> " + param.getResult());
+
+                                }
+                            });
                         } else if (className.equals("com.tencent.mm.pluginsdk.ui.chat.ChatFooter")) {
                             Log.i("zhouke", "加载类chat.ChatFooter 成功 》》 ");
 
